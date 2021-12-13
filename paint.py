@@ -42,6 +42,7 @@ class Paint:
         self.canvas.bind('<Button-1>', self.locate_xy)
         self.canvas.bind("<ButtonRelease-1>", self.save_snapshot)
         self.canvas.bind("<B1-Motion>", self.paint) # bind paint when mouse is clicked and dragged
+        self.root.bind_all("<Control-z>", self.undo)
 
         # create a button to delete the drawing on the window
         self.delete_button = Button(self.root, text="🗑️", command=self.delete)
@@ -135,7 +136,7 @@ class Paint:
                 self.lines_ids.append(val_append)
                 return
 
-    def undo(self) -> None:
+    def undo(self, event: Event or None = None) -> None:
         """
         Undoes the last line drawn
         """
