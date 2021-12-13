@@ -1,4 +1,3 @@
-# import tkinter
 from tkinter import *
 from typing import List, Tuple
 
@@ -41,8 +40,8 @@ class Paint:
         self.canvas = Canvas(self.root, bg="white", width=800, height=450)
         self.canvas.pack(fill=BOTH) # expand to fill window and fill both directions
         self.canvas.bind('<Button-1>', self.locate_xy)
+        self.canvas.bind("<ButtonRelease-1>", self.save_snapshot)
         self.canvas.bind("<B1-Motion>", self.paint) # bind paint when mouse is clicked and dragged
-        # self.canvas.bind("<Button-3>", self.choose_color) # bind choose color event to canvas
 
         # create a button to delete the drawing on the window
         self.delete_button = Button(self.root, text="🗑️", command=self.delete)
@@ -76,6 +75,7 @@ class Paint:
         self.color_box((40, 100, 60, 120), fill="#00ffc8")
         self.color_box((40, 130, 60, 150), fill="#0033ff")
         self.color_box((40, 160, 60, 180), fill="#f200ff")
+        # self.color_box((40, 190, 60, 210), fill="brown")
 
     def thickness_oval(self, position: List[int] or Tuple[int], fill: str, width: int or str) -> None:
         id = self.canvas.create_oval(position, fill=fill)
@@ -115,14 +115,33 @@ class Paint:
         """
         Deletes the lines on the canvas
         """
-        for id in self.lines_ids:
-            self.canvas.delete(id)
+        for ids in self.lines_ids:
+            for individual_id in ids:
+                self.canvas.delete(individual_id)
+
+    def save_snapshot(self, event: Event) -> None:
+        """
+        Saves the lines created when the mouse was
+        pressed inside a list inside lines_ids so
+        that they can be deleted later all at the
+        same time
+                       [1,2,3,4,5,6,7] -> [[1,2,3,4,5,6,7]]
+        [[1,2,3,4,5,6,7],8,9,10,11,12] -> [[1,2,3,4,5,6,7],[8,9,10,11,12]]
+        """
+        for i, ids in enumerate(self.lines_ids):
+            if not isinstance(ids, list):
+                val_append = self.lines_ids[i:]
+                del self.lines_ids[i:]
+                self.lines_ids.append(val_append)
+                return
+
     def undo(self) -> None:
         """
         Undoes the last line drawn
         """
         if len(self.lines_ids) > 0:
-            self.canvas.delete(self.lines_ids[-1])
+            for ids in self.lines_ids[-1]:
+                self.canvas.delete(ids)
             self.lines_ids.pop()
 
 if __name__ == "__main__":
