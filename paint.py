@@ -1,5 +1,6 @@
 from tkinter import *
 from typing import List, Tuple
+# from tkinter import colorchooser
 
 def main():
     # init window with paint title and size 800x500
@@ -7,7 +8,7 @@ def main():
     window.title("Paint")
     window.geometry("800x500")
     window.state("normal")
-    window.resizable(width=False, height=False)
+    # window.resizable(width=False, height=False)
     app = Paint(window)
     app.mainloop()
 
@@ -17,14 +18,12 @@ class Paint:
             raise TypeError("root must be a Tk instance")
         self.root: Tk = root
         self.initUI()
-        self.color_picker()
-        self.thick_picker()
 
     current_x: int = 0
     current_y: int = 0
     pencil_color: str = 'black'
     pencil_thickness: int = 10
-    lines_ids: List[int] = []
+    lines_ids: List[List[int] and int] = []
 
     def set_pencil_color(self, color: str) -> None:
         self.pencil_color = color
@@ -39,16 +38,20 @@ class Paint:
         # create a canvas to draw on and attach it to the window
         self.canvas = Canvas(self.root, bg="white", width=800, height=450)
         self.canvas.pack(fill=BOTH) # expand to fill window and fill both directions
-        self.canvas.bind('<Button-1>', self.locate_xy)
+        self.canvas.bind('<Button-1>', self.paint)
         self.canvas.bind("<ButtonRelease-1>", self.save_snapshot)
         self.canvas.bind("<B1-Motion>", self.paint) # bind paint when mouse is clicked and dragged
         self.root.bind_all("<Control-z>", self.undo)
+        self.root.bind_all("<Control-d>", self.delete)
 
         # create a button to delete the drawing on the window
         self.delete_button = Button(self.root, text="🗑️", command=self.delete)
         self.undo_button = Button(self.root, text="⬅️", command=self.undo)
         self.delete_button.pack(side=LEFT, padx=5, pady=5)
         self.undo_button.pack(side=LEFT, padx=5, pady=5)
+
+        self.color_picker()
+        self.thick_picker()
 
     def thick_picker(self) -> None:
         self.thickness_oval((3, 198, 5, 200), fill="black", width=2)
@@ -91,8 +94,6 @@ class Paint:
         id = self.canvas.create_rectangle(position, fill=fill)
         self.canvas.tag_bind(id, '<Button-1>', lambda x: self.set_pencil_color(fill))
 
-
-
     def mainloop(self) -> None:
         self.root.mainloop()
 
@@ -102,23 +103,15 @@ class Paint:
         """
         self.current_x = event.x
         self.current_y = event.y
-        # print(self.current_x, self.current_y)
 
     def paint(self, event: Event) -> None:
         """
         Paints the line when the mouse is moved
         """
-        id = self.canvas.create_oval(self.current_x, self.current_y, event.x, event.y, outline=self.pencil_color, width=self.pencil_thickness)
         self.locate_xy(event)
-        self.lines_ids.append(str(id))
+        id = self.canvas.create_oval(self.current_x, self.current_y, event.x, event.y, outline=self.pencil_color, width=self.pencil_thickness)
 
-    def delete(self) -> None:
-        """
-        Deletes the lines on the canvas
-        """
-        for ids in self.lines_ids:
-            for individual_id in ids:
-                self.canvas.delete(individual_id)
+        self.lines_ids.append(str(id))
 
     def save_snapshot(self, event: Event) -> None:
         """
@@ -135,6 +128,14 @@ class Paint:
                 del self.lines_ids[i:]
                 self.lines_ids.append(val_append)
                 return
+
+    def delete(self, event: Event or None = None) -> None:
+        """
+        Deletes the lines on the canvas
+        """
+        for ids in self.lines_ids:
+            for individual_id in ids:
+                self.canvas.delete(individual_id)
 
     def undo(self, event: Event or None = None) -> None:
         """
